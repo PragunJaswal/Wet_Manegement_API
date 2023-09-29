@@ -1,0 +1,8 @@
+fastapi
+pydantic
+psycopg2
+requests
+mangum
+jinja2
+starlette
+uvicorn == 0.21.1
