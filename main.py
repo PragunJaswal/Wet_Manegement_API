@@ -75,7 +75,7 @@ def print_api_response():
         except Exception as e:
             print(f"An error occurred: {str(e)}")
 
-        # Wait for 5 seconds before making the next request
+        # Wait for 60 seconds before making the next request
         time.sleep(60)
 
 
@@ -94,12 +94,13 @@ def getpost():
     try:
         cursor.execute("""SELECT * FROM public."Login database" ORDER BY id DESC """)
         login = cursor.fetchall()
+        # conn.close()
+        # cursor.close()
         return{ "data":login }
     except Exception :
         start()
         print("DATABASE CONNECTED")
-        return {"Error in database connection"}
-    
+        raise HTTPException(status_code=500, detail="databse disconnected")
 
 @app.post("/post/data/login",status_code=201)        #DEFAULT RESPONSE 201
 def post(payload: login):
