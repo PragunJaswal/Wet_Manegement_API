@@ -12,7 +12,6 @@ import psycopg2                     # for databse connection
 from psycopg2.extras import RealDictCursor
 import time
 
-
 app =FastAPI()
 
 
@@ -30,22 +29,29 @@ class login(BaseModel):
     pincode: int
 
 
+# Declare global variables
+conn = None
+cursor = None
                     #connection with database
-while True:
-    try:
-        conn = psycopg2.connect(host = 'db.vholtltfpdmccdgybxaa.supabase.co', database ='postgres', 
-                            user='postgres' ,password ='PragunJaswal',cursor_factory= RealDictCursor)
-        cursor = conn.cursor()
-        print("DATABASE CONNECTED")
-        break
 
-    except Exception as error:
-        print("Connection is not Establised")
-        print("Error was ",error)
-        time.sleep(2)
+def start():
+    global conn, cursor
+    while True:
+        try:
+            conn = psycopg2.connect(host = 'db.vholtltfpdmccdgybxaa.supabase.co', database ='postgres', 
+                                user='postgres' ,password ='PragunJaswal',cursor_factory= RealDictCursor)
+            cursor = conn.cursor()
+            print("DATABASE CONNECTED")
+            break
+
+        except Exception as error:
+            print("Connection is not Establised")
+            print("Error was ",error)
+            time.sleep(2)
 
 templates =Jinja2Templates(directory="templates")
 
+start()
 
 @app.get("/")
 def root():
@@ -85,9 +91,15 @@ def on_startup():
 
 @app.get("/get/data/login")
 def getpost():
-    cursor.execute("""SELECT * FROM public."Login database" ORDER BY id DESC """)
-    login = cursor.fetchall()
-    return{ "data":login }
+    try:
+        cursor.execute("""SELECT * FROM public."Login database" ORDER BY id DESC """)
+        login = cursor.fetchall()
+        return{ "data":login }
+    except Exception :
+        start()
+        print("DATABASE CONNECTED")
+        return {"Error in database connection"}
+    
 
 @app.post("/post/data/login",status_code=201)        #DEFAULT RESPONSE 201
 def post(payload: login):
