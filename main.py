@@ -88,7 +88,6 @@ def on_startup():
     background_thread.start()
 
 
-
 @app.get("/get/data/login")
 def getpost():
     try:
@@ -110,6 +109,39 @@ def post(payload: login):
     conn.commit()
     conn.rollback()
     return {"Success":new }
+
+@app.get("/get/mypoints/{id}")
+def getranking(id :int):
+    try:
+        cursor.execute(f"""SELECT points FROM public."User_database" WHERE id = {id}""")
+        points = cursor.fetchall()
+        return points
+    except Exception :
+        start()
+        print("DATABASE CONNECTED")
+        raise HTTPException(status_code=500, detail="databse disconnected")
+
+@app.get("/get/ranking")
+def getranking():
+    try:
+        cursor.execute("""SELECT name,mobile_no,points FROM public."User_database" ORDER BY points DESC LIMIT 5""")
+        ranks = cursor.fetchall()
+        return{ "data":ranks }
+    except Exception :
+        start()
+        print("DATABASE CONNECTED")
+        raise HTTPException(status_code=500, detail="databse disconnected")
+
+@app.get("/get/status/{id}")
+def getstatus(id : int):
+    try:
+        cursor.execute(f"""SELECT dry_level,wet_level FROM public."User_database" WHERE id = {id}""")
+        status = cursor.fetchall()
+        return status
+    except Exception :
+        start()
+        print("DATABASE CONNECTED")
+        raise HTTPException(status_code=500, detail="databse disconnected")
 
 app.add_middleware(
 CORSMiddleware,
