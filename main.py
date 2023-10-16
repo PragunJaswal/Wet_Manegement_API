@@ -83,9 +83,9 @@ def print_api_response():
 background_thread = threading.Thread(target=print_api_response)
 
 # Start the background thread when the application start
-@app.on_event("startup")
-def on_startup():
-    background_thread.start()
+# @app.on_event("startup")
+# def on_startup():
+#     background_thread.start()
 
 
 @app.get("/get/data/login")
