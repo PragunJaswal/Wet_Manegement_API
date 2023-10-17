@@ -28,6 +28,17 @@ class login(BaseModel):
     tehsil: str
     pincode: int
 
+class balance(BaseModel):
+    balance: int
+
+class address(BaseModel):
+    id : int
+    address:  str
+
+class order(BaseModel):
+    id : int
+    address:  str
+    weight: int
 
 # Declare global variables
 conn = None
@@ -142,6 +153,84 @@ def getstatus(id : int):
         start()
         print("DATABASE CONNECTED")
         raise HTTPException(status_code=500, detail="databse disconnected")
+
+@app.get("/get/farmer_balance/{id}")
+def getbalance(id : int):
+    try:
+        cursor.execute(f"""SELECT balance FROM public."Farmer_database" WHERE id = {id}""")
+        status = cursor.fetchall()
+        return status
+    except Exception :
+        start()
+        print("DATABASE CONNECTED")
+        raise HTTPException(status_code=500, detail="databse disconnected")
+
+
+@app.post("/post/farmer/balance/{id}",status_code=201)        #DEFAULT RESPONSE 201
+def update(payload: balance , id: int):
+    cursor.execute("""UPDATE "Farmer_database" SET balance = %s WHERE id = %s returning *""",(
+    payload.balance, id))
+    new =cursor.fetchone()
+    conn.commit()
+    conn.rollback()
+    return {"Success":new }
+
+
+
+@app.get("/get/municipal/login")
+def getpost():
+    try:
+        cursor.execute("""SELECT * FROM public."Municipal_database" """)
+        login = cursor.fetchall()
+        # conn.close()
+        # cursor.close()
+        return{ "data":login }
+    except Exception :
+        start()
+        print("DATABASE CONNECTED")
+        raise HTTPException(status_code=500, detail="databse disconnected")
+    
+@app.get("/get/pending/compost_request")
+def getpost():
+    try:
+        cursor.execute("""SELECT order_compost_request,weight,id FROM public.pending_requests WHERE order_compost_request IS NOT NULL """)
+        data = cursor.fetchall()
+        return{ "data":data }
+    except Exception :
+        start()
+        print("DATABASE CONNECTED")
+        raise HTTPException(status_code=500, detail="databse disconnected")
+
+@app.get("/get/pending/waste_pickup_request")
+def getpost():
+    try:
+        cursor.execute("""SELECT waste_pickup_request FROM public.pending_requests WHERE waste_pickup_request IS NOT NULL """)
+        data = cursor.fetchall()
+        return{ "data":data }
+    except Exception :
+        start()
+        print("DATABASE CONNECTED")
+        raise HTTPException(status_code=500, detail="databse disconnected")
+
+
+@app.post("/post/waste_pickup",status_code=201)        #DEFAULT RESPONSE 201
+def update(payload: address):
+    cursor.execute("""INSERT INTO public.pending_requests (client_id, waste_pickup_request) VALUES (%s,%s) returning *""",(
+    payload.id,payload.address))
+    new =cursor.fetchone()
+    conn.commit()
+    conn.rollback()
+    return {"Success":new }
+
+@app.post("/post/order_compost",status_code=201)        #DEFAULT RESPONSE 201
+def update(payload: order):
+    cursor.execute("""INSERT INTO public.pending_requests (client_id, order_compost_request, weight) VALUES (%s,%s,%s) returning *""",(
+    payload.id,payload.address, payload.weight))
+    new =cursor.fetchone()
+    conn.commit()
+    conn.rollback()
+    return {"Success":new }
+
 
 app.add_middleware(
 CORSMiddleware,
